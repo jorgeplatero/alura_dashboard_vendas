@@ -1,4 +1,4 @@
-# alura_dashboard_vendas
+# Dashboard de vendas
 
 Dashboard de vendas realizado em curso de Streamlit da Alura.
 

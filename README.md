@@ -2,4 +2,5 @@
 
 Dashboard de vendas realizado em curso de Streamlit da Alura.
 
-Link da aplicação: https://aluradashboardvendas-nwpmuqsdedf8rihkccx3ym.streamlit.app/ 
+Dashboard Streamlit: <a style="text-decoration:none;" href="https://aluradashboardvendas-nwpmuqsdedf8rihkccx3ym.streamlit.app/" target="_blank">link</a>.
+

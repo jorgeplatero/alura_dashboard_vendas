@@ -1,4 +1,4 @@
-# Dashboard de vendas
+# Dashboard de Vendas
 
 ## Descrição do Projeto
 

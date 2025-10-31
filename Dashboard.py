@@ -13,7 +13,7 @@ def formata_numero(valor, prefixo = ''):
     return f'{prefixo} {valor:.2f} milhões'
 
 
-st.title('DASHBOARD DE VENDAS :shopping_trolley:')
+st.title('DASHBOARD DE VENDAS 🛒')
 url = 'https://labdados.com/produtos'
 regioes = ['Brasil', 'Centro-Oeste', 'Nordeste', 'Norte', 'Sudeste', 'Sul']
 
@@ -65,17 +65,25 @@ vendas_categorias = pd.DataFrame(dados.groupby('Categoria do Produto')['Preço']
 vendedores = pd.DataFrame(dados.groupby('Vendedor')['Preço'].agg(['sum', 'count'])) #cria dataframe de vendedores com soma de vendas e contagem de vendas
 
 #gráficos
-fig_mapa_receita = px.scatter_geo(
+fig_mapa_receita = px.scatter_mapbox(
     receita_estados, 
     lat = 'lat',
     lon = 'lon',
-    scope = 'south america',
+    zoom = 2, 
     size = 'Preço',
-    template = 'seaborn',
+    center={'lat': -17, 'lon': -54},
+    mapbox_style = 'carto-positron',
     hover_name = 'Local da Compra',
     hover_data = {'lat': False, 'lon': False},
-    title = 'Receita por estado'
+    custom_data=['Preço'],
+    title = 'Receita por Estado'
 )
+fig_mapa_receita.update_traces(
+        hovertemplate=(
+            'Estado: %{hovertext}<br><br>'
+            'Receita: R$%{customdata[0]:.2f}<br>'
+        )
+    )
 
 fig_receita_mensal = px.line(
     receita_mensal, 
@@ -85,7 +93,7 @@ fig_receita_mensal = px.line(
     range_y = (0, receita_mensal.max()),
     color = 'Ano',
     line_dash = 'Ano',
-    title = 'Receita mensal'
+    title = 'Receita Mensal'
 )
 fig_receita_mensal.update_layout(yaxis_title = 'Receita')
 
@@ -94,29 +102,36 @@ fig_receita_estados = px.bar(
     x = 'Local da Compra',
     y = 'Preço',
     text_auto = True,
-    title = 'Top estados (receita)'
+    title = 'Top Estados (Receita)'
 )
 fig_receita_estados.update_layout(yaxis_title = 'Receita')
 
 fig_receita_categorias = px.bar(
     receita_categorias,
     text_auto = True,
-    title = 'Receita por categoria'
+    title = 'Receita por Categoria'
 )
 fig_receita_categorias.update_layout(yaxis_title = 'Receita', showlegend=False)
 
-fig_mapa_vendas = px.scatter_geo(
+fig_mapa_vendas = px.scatter_mapbox(
     vendas_estados, 
     lat = 'lat', 
     lon= 'lon', 
-    scope = 'south america', 
-    #fitbounds = 'locations', 
-    template= 'seaborn', 
+    zoom = 2,
+    center={'lat': -17, 'lon': -54},
+    mapbox_style = 'carto-positron', 
     size = 'Preço', 
     hover_name ='Local da Compra', 
     hover_data = {'lat': False,'lon': False},
+    custom_data=['Preço'],
     title = 'Vendas por estado',
 )
+fig_mapa_vendas.update_traces(
+        hovertemplate=(
+            'Estado: %{hovertext}<br><br>'
+            'Receita: R$%{customdata[0]:.2f}<br>'
+        )
+    )
 
 fig_vendas_mensal = px.line(
     vendas_mensal, 
@@ -126,59 +141,59 @@ fig_vendas_mensal = px.line(
     range_y = (0, vendas_mensal.max()), 
     color = 'Ano', 
     line_dash = 'Ano',
-    title = 'Quantidade de vendas mensal'
+    title = 'Quantidade de Vendas Mensal'
 )
 
-fig_vendas_mensal.update_layout(yaxis_title = 'Quantidade de vendas')
+fig_vendas_mensal.update_layout(yaxis_title = 'Quantidade de Vendas', xaxis_title = 'Mês')
 
 fig_vendas_estados = px.bar(
     vendas_estados.head(),
     x = 'Local da Compra',
     y = 'Preço',
     text_auto = True,
-    title = 'Top 5 estados (venda)'
+    title = 'Top 5 Estados (Venda)'
 )
 
-fig_vendas_estados.update_layout(yaxis_title = 'Quantidade de vendas')
+fig_vendas_estados.update_layout(yaxis_title = 'Quantidade de Vendas')
 
 fig_vendas_categorias = px.bar(
     vendas_categorias, 
     text_auto = True,
-    title = 'Vendas por categoria'
+    title = 'Vendas por Categoria'
 )
-fig_vendas_categorias.update_layout(showlegend = False, yaxis_title = 'Quantidade de vendas')
+fig_vendas_categorias.update_layout(showlegend = False, yaxis_title = 'Quantidade de Vendas')
 
 #visualização no streamlit
 
 aba1 , aba2, aba3 = st.tabs(['Receita', 'Quantidade de vendas', 'Vendedores'])
 
 with aba1:
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([.4, .6])
     with col1:
         st.metric('Receita', formata_numero(dados['Preço'].sum()))
-        st.plotly_chart(fig_mapa_receita, use_container_width = True)
+        st.plotly_chart(fig_mapa_receita, config={'scrollZoom': True})
     with col2:
-        st.metric('Quantidade de vendas', formata_numero(dados.shape[0]))
+        st.metric('Quantidade de Vendas', formata_numero(dados.shape[0]))
         st.plotly_chart(fig_receita_mensal, use_container_width = True)
     
     st.plotly_chart(fig_receita_estados, use_container_width = True)
     st.plotly_chart(fig_receita_categorias, use_container_width = True)
 
 with aba2:
-    coluna1, coluna2 = st.columns(2)
+    coluna1, coluna2 = st.columns([.4, .6])
     with coluna1:
         st.metric('Receita', formata_numero(dados['Preço'].sum(), 'R$'))
         st.plotly_chart(fig_mapa_vendas, use_container_width = True)
 
     with coluna2:
-        st.metric('Quantidade de vendas', formata_numero(dados.shape[0]))
+        st.metric('Quantidade de Vendas', formata_numero(dados.shape[0]))
         st.plotly_chart(fig_vendas_mensal, use_container_width = True)
         
     st.plotly_chart(fig_vendas_estados, use_container_width = True)
     st.plotly_chart(fig_vendas_categorias, use_container_width = True)
 
 with aba3:
-    qtd_vendedores = st.number_input('Quantidade de vendedores', 2, 10, 5)
+    qtd_vendedores = st.number_input('Quantidade de Vendedores', 2, 10, 5)
     col1, col2 = st.columns(2)
     with col1:
         st.metric('Receita', formata_numero(dados['Preço'].sum(), 'R$'))
@@ -186,16 +201,18 @@ with aba3:
             x = 'sum',
             y = vendedores[['sum']].sort_values('sum', ascending = False).head(qtd_vendedores).index,
             text_auto = True,
-            title = f'Top {qtd_vendedores} vendedores (receita)'
+            title = f'Top {qtd_vendedores} Vendedores (Receita)'
         )
+        fig_receita_vendedores.update_layout(yaxis_title='Vendedores', xaxis_title='Receita')
         st.plotly_chart(fig_receita_vendedores, use_container_width = True)
     with col2:
-        st.metric('Quantidade de vendas', formata_numero(dados.shape[0]))
+        st.metric('Quantidade de Vendas', formata_numero(dados.shape[0]))
         fig_vendas_vendedores = px.bar(
             vendedores[['count']].sort_values('count', ascending = False).head(qtd_vendedores),
             x = 'count',
             y = vendedores[['count']].sort_values('count', ascending = False).head(qtd_vendedores).index,
             text_auto = True,
-            title = f'Top {qtd_vendedores} vendedores (quantidade de vendas)'
+            title = f'Top {qtd_vendedores} Vendedores (Quantidade de Vendas)'
         )
+        fig_vendas_vendedores.update_layout(yaxis_title='Vendedores', xaxis_title='Quantidade de Vendas')
         st.plotly_chart(fig_vendas_vendedores, use_container_width = True)
